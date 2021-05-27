@@ -1,0 +1,15 @@
+{
+  "domain": "rpi_backlight",
+  "name": "RaspberryPi Backlight",
+  "documentation": "https://github.com/gannonprudhomme/ha-rpi-backlight",
+  "issue_tracker": "https://github.com/gannonprudhomme/ha-rpi-backlight/issues",
+  "dependencies": [],
+  "config_flow": true,
+  "codeowners": [
+    "@gannonprudhomme"
+  ],
+  "requirements": [
+    "python-socketio[asyncio_client]==5.3.0"
+  ],
+  "version": "0.1.0"
+}
