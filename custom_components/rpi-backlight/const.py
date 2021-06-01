@@ -1,12 +1,13 @@
 """ Constants for the Desktop Processes integration. """
 
-NAME = "Desktop Processes"
-DOMAIN = "desktop_processes"
-IGNORE = "ignore"
-PRIORITY = "priority"
-SCAN_INTERVAL = "scan_interval"
+NAME = "RaspberryPi Backlight"
+DOMAIN = "rpi_backlight"
 ATTR_CONFIG = "config"
 VERSION = "0.1.0"
+POWER = "power"
+BRIGHTNESS = "brightness"
+
+CONFIG_ENTRY_ID = "entity_id"
 
 STARTUP_MESSAGE = f"""
 -------------------------------------------------------------------

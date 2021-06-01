@@ -7,9 +7,11 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_SCAN_INTERVAL
 from homeassistant.core import HomeAssistant, ServiceCall, callback
 from homeassistant.helpers.entity_component import EntityComponent
+from homeassistant.helpers import device_registry
 import socketio
 
-from .const import DOMAIN, ATTR_CONFIG
+from .device import RaspberryPiDevice
+from .const import DOMAIN, ATTR_CONFIG, CONFIG_ENTRY_ID
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -33,6 +35,7 @@ async def async_setup(hass: HomeAssistant, config: dict):
     hass.data[DOMAIN][ATTR_CONFIG] = config.get(DOMAIN)
 
     hass.services.async_register(DOMAIN, "set_brightness", _set_brightness)
+    hass.services.async_register(DOMAIN, "set_screen_power", _set_screen_power)
 
     return True
 
@@ -45,39 +48,39 @@ async def async_setup_entry(hass: HomeAssistant, entry):
     if config_data and CONF_SCAN_INTERVAL in config_data:
         scan_interval = config_data.get(CONF_SCAN_INTERVAL) or SCANNING_INTERVAL
 
-    if not "url" in entry.data:
-        print("shit went wrong\n")
-        return False
-
     url = entry.data.get("url")
 
-    try:
-        # await desktop.connect()
-        pass
-    except socketio.exceptions.ConnectionError as err:
-        _LOGGER.error(err)
-        return False
+    # Create the device
+    device = RaspberryPiDevice(url)
 
-    component = EntityComponent(
-        None, DOMAIN, hass, timedelta(seconds=scan_interval)
+    hass.data[DOMAIN][CONFIG_ENTRY_ID] = device
+
+    dev_reg = await device_registry.async_get_registry(hass)
+    dev_reg.async_get_or_create(
+        config_entry_id=entry.entry_id,
+        connections={(device_registry.CONNECTION_NETWORK_MAC, "abcde")},
+        identifiers={(DOMAIN, "abcde")},
+        name=device.name,
+        manufacturer=device.manufacturer,
+        model=device.model_name,
     )
 
-    # await component.async_add_entities([desktop])
+    hass.config_entries.async_setup_platforms(entry, ["sensor"])
 
     return True
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """ Handle removal of entry """
-    # TODO: Need to figure out how to a remove an entry
+    # Get the according component so we can get the entities it contains
+    """
+    component = hass.data[DOMAIN]["component"]
 
-    print(DOMAIN)
+    # Must convert it to a list, otherwise we'll get a "dict size changed during iteration"
+    entities = list(component.entities)
 
-    component = EntityComponent(
-        None, DOMAIN, hass, timedelta(seconds=SCANNING_INTERVAL)
-    )
-
-    for entity in component.entities:
-        print(entity)
+    # There will only be one, but iterate anyways
+    for entity in entities:
         await component.async_remove_entity(entity.entity_id)
+    """
 
     return True

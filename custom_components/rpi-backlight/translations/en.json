@@ -1,0 +1,19 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Desktop Processes",
+        "description": "Enter the Desktop Processes Server Socket.IO URL.",
+        "data": {
+          "url": "URL"
+        }
+      }
+    },
+    "error": {
+      "did_not_connect": "Cannot connect to the given URL."
+    },
+    "abort": {
+      "single_instance_allowed": "Only a single instance is allowed."
+    }
+  }
+}

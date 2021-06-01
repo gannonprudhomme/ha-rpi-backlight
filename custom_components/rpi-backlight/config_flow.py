@@ -53,15 +53,18 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         sio = socketio.AsyncClient()
 
         try:
+            # Connect to make sure it's a valid URL
+            # If it isn't, connect will throw a ConnectionError
             await sio.connect(url)
+            # Disconnect now that we now it is valid
             await sio.disconnect()
-            return self.async_create_entry(title=f"DP: {url}", data={"url": url})
+            return self.async_create_entry(title=f"{url}", data={"url": url})
         except socketio.exceptions.ConnectionError as err:
-            print(err)
-            errors = { "base": "auth_error" }
+            _LOGGER.exception(err)
+            errors = { "base": "did_not_connect" }
             return self.async_show_form(step_id="user", data_schema=data_schema, errors=errors)
         except Exception as e:
-            print(e)
+            _LOGGER.exception(e)
 
 # Really the only error we need
 class CannotConnect(exceptions.HomeAssistantError):
