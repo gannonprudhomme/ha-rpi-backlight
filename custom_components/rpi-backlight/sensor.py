@@ -107,7 +107,7 @@ class PiSensor(CoordinatorEntity, Entity):
         """ Get Device Info """
         return {
             "connections": {
-                (device_registry.CONNECTION_UPNP, self._device._serial_number)
+                (device_registry.CONNECTION_UPNP, self._device.serial_number)
             },
             "name": self._device.name,
             "manufacturer": self._device.manufacturer,

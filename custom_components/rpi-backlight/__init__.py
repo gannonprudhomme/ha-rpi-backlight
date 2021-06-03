@@ -11,20 +11,47 @@ from homeassistant.helpers import device_registry
 import socketio
 
 from .device import RaspberryPiDevice
-from .const import DOMAIN, ATTR_CONFIG, CONFIG_ENTRY_ID
+from .const import DOMAIN, ATTR_CONFIG, CONFIG_ENTRY_ID, MODEL, SERIAL_NUMBER
 
 _LOGGER = logging.getLogger(__name__)
 
-SCANNING_INTERVAL = 5
+SCANNING_INTERVAL = 30
 
+# TODO: Add entity_id specifiying so we can have multiple Pi's
+devices = []
 
 @callback
 async def _set_brightness(call: ServiceCall):
     """ Handle the call """
+    brightness = call.data.get("brightness")
+
+    if brightness is None:
+        _LOGGER.error("brightness must be passed to set_brightness")
+        return
+
+    if len(devices) == 0:
+        _LOGGER.error("Attempting to set brightness with no available devices")
+        return
+    
+    # Assuming only one device at the momement
+    device = devices[0]
+    await device.set_brightness(brightness)
 
 @callback
 async def _set_screen_power(call: ServiceCall):
     """ Handle the call """
+    power = call.data.get("power")
+
+    if power is None:
+        _LOGGER.error("power must be passed to set_power")
+        return
+
+    if len(devices) == 0:
+        _LOGGER.error("Attempting to set brightness with no available devices")
+        return
+
+    device = devices[0]
+    await device.set_power(power)
 
 @asyncio.coroutine
 async def async_setup(hass: HomeAssistant, config: dict):
@@ -52,20 +79,27 @@ async def async_setup_entry(hass: HomeAssistant, entry):
 
     # Create the device
     device = RaspberryPiDevice(url)
+    await device.connect()
+
+    # info = await device.get_device_info()
+
+    devices.append(device)
+
+    serial_number = SERIAL_NUMBER
 
     hass.data[DOMAIN][CONFIG_ENTRY_ID] = device
 
     dev_reg = await device_registry.async_get_registry(hass)
     dev_reg.async_get_or_create(
         config_entry_id=entry.entry_id,
-        connections={(device_registry.CONNECTION_NETWORK_MAC, "abcde")},
-        identifiers={(DOMAIN, "abcde")},
+        connections={(device_registry.CONNECTION_UPNP, device.serial_number)},
+        identifiers={(DOMAIN, device.serial_number)},
         name=device.name,
         manufacturer=device.manufacturer,
         model=device.model_name,
     )
 
-    hass.config_entries.async_setup_platforms(entry, ["sensor"])
+    hass.async_create_task(hass.config_entries.async_forward_entry_setup(entry, "sensor"))
 
     return True
 
