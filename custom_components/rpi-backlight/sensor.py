@@ -22,12 +22,14 @@ SENSOR_TYPES = {
         "name": "Screen Power",
         "unit": "",
         "unique_id": "screen_power",
+        "icon": "mdi:monitor",
     },
     BRIGHTNESS: {
         "device_value_key": BRIGHTNESS,
         "name": "Screen Brightness",
         "unit": "%",
         "unique_id": "screen_brightness",
+        "icon":  "mdi:monitor",
     }
 }
 
@@ -85,7 +87,7 @@ class PiSensor(CoordinatorEntity, Entity):
     @property
     def icon(self) -> str:
         """ Icon to use on the frontend, if any """
-        return "mdi:server-network"
+        return self.sensor_type["icon"]
 
     @property
     def name(self) -> str:
