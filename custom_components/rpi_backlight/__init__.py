@@ -38,7 +38,7 @@ async def _set_brightness(call: ServiceCall):
     await device.set_brightness(brightness)
 
 @callback
-async def _set_screen_power(call: ServiceCall):
+async def _set_power(call: ServiceCall):
     """ Handle the call """
     power = call.data.get("power")
 
@@ -53,6 +53,16 @@ async def _set_screen_power(call: ServiceCall):
     device = devices[0]
     await device.set_power(power)
 
+@callback
+async def _shutdown(call: ServiceCall):
+    """ Handle the shutdown call """
+    if len(devices) == 0:
+        _LOGGER.error("Attempting to set brightness with no available devices")
+        return
+
+    device = devices[0]
+    await device.shutdown()
+
 @asyncio.coroutine
 async def async_setup(hass: HomeAssistant, config: dict):
     """ Set up the Desktop Processes component. """
@@ -62,7 +72,8 @@ async def async_setup(hass: HomeAssistant, config: dict):
     hass.data[DOMAIN][ATTR_CONFIG] = config.get(DOMAIN)
 
     hass.services.async_register(DOMAIN, "set_brightness", _set_brightness)
-    hass.services.async_register(DOMAIN, "set_screen_power", _set_screen_power)
+    hass.services.async_register(DOMAIN, "set_power", _set_power)
+    hass.services.async_register(DOMAIN, "shutdown", _shutdown)
 
     return True
 

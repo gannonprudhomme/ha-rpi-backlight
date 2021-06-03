@@ -118,3 +118,11 @@ class RaspberryPiDevice:
             return
 
         await self.sio.emit("set_screen_power", power)
+
+    async def shutdown(self):
+        """ Tells the Pi to shutdown """
+        if not self.sio.connected:
+            _LOGGER.error("shutdown called but the server is not connected")
+            return
+
+        await self.sio.emit("shutdown", None)
