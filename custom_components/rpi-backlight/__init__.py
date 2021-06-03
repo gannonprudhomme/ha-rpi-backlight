@@ -87,6 +87,7 @@ async def async_setup_entry(hass: HomeAssistant, entry):
 
     serial_number = SERIAL_NUMBER
 
+    # TODO: Make this not use CONFIG_ENTRY_ID
     hass.data[DOMAIN][CONFIG_ENTRY_ID] = device
 
     dev_reg = await device_registry.async_get_registry(hass)

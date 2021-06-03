@@ -36,7 +36,7 @@ class RaspberryPiDevice:
     @property
     def name(self):
         """ Get the device name """
-        return f"RaspberryPi-{self._serial_number}"
+        return "RaspberryPi"
 
     @property
     def manufacturer(self) -> str:
@@ -46,7 +46,10 @@ class RaspberryPiDevice:
     @property
     def model_name(self) -> str:
         """Get the model name."""
-        return self._model_name
+        if self._model_name:
+            return self._model_name
+
+        return "Pi"
 
     @property
     def device_type(self) -> str:
