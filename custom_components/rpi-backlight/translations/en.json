@@ -2,7 +2,7 @@
   "config": {
     "step": {
       "user": {
-        "title": "Desktop Processes",
+        "title": "RaspberryPi Backlight",
         "description": "Enter the Desktop Processes Server Socket.IO URL.",
         "data": {
           "url": "URL"

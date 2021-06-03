@@ -7,27 +7,11 @@ from homeassistant import config_entries, core, exceptions
 
 import socketio
 from .const import DOMAIN
-from .desktop import Desktop
 
 _LOGGER = logging.getLogger(__name__)
 
-class PlaceholderHub:
-    """Placeholder class to make tests pass.
-
-    TODO Remove this placeholder class and replace with things from your PyPI package.
-    """
-
-    def __init__(self, host):
-        """Initialize."""
-        self.host = host
-
-    async def authenticate(self, username, password) -> bool:
-        """Test if we can authenticate with the host."""
-        return True
-
-
 class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
-    """Handle a config flow for Desktop Processes."""
+    """Handle a config flow for RaspberryPi Backlight."""
 
     VERSION = 1
     CONNECTION_CLASS = config_entries.CONN_CLASS_LOCAL_POLL
@@ -35,7 +19,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     async def async_step_user(self, user_input=None):
         """Handle the initial step."""
         data_schema = vol.Schema({
-            vol.Required("url", default="http://localhost:3001/"): str
+            vol.Required("url", default="http://localhost:8080/"): str
         })
 
         if user_input is None:
