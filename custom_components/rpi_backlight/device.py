@@ -30,7 +30,7 @@ class RaspberryPiDevice:
         try:
             await self.sio.connect(self.url)
             _LOGGER.info("Connected to server at URL %s", self.url)
-        except ConnectionError:
+        except socketio.exceptions.ConnectionError:
             _LOGGER.error("Cannot connect to server at URL %s", self.url)
 
     @property
@@ -117,7 +117,7 @@ class RaspberryPiDevice:
             _LOGGER.error("set_power called but the server is not connected")
             return
 
-        await self.sio.emit("set_screen_power", power)
+        await self.sio.emit("set_power", power)
 
     async def shutdown(self):
         """ Tells the Pi to shutdown """
