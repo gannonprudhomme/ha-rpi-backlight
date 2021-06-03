@@ -2,13 +2,15 @@ import logging
 from datetime import timedelta
 from typing import Any, Mapping
 
-from homeassistant.components.sensor import SensorEntity
+# from homeassistant.components.sensor import SensorEntity
+from homeassistant.helpers.entity import Entity # , DeviceInfo
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
-from homeassistant.helpers.entity_platform import AddEntitiesCallback
+# from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import (
     CoordinatorEntity, DataUpdateCoordinator,
 )
+from homeassistant.helpers import device_registry
 from .const import POWER, BRIGHTNESS, CONFIG_ENTRY_ID, DOMAIN
 from .device import RaspberryPiDevice
 
@@ -18,21 +20,24 @@ SENSOR_TYPES = {
     POWER: {
         "device_value_key": POWER,
         "name": "Screen Power",
-        "unit": "something",
-        "unique_id": "unique_id",
-        "derived_name": "idek",
-        "derived_unit": "idek",
-        "dervied_unique_id": "idek",
+        "unit": "",
+        "unique_id": "screen_power",
+    },
+    BRIGHTNESS: {
+        "device_value_key": BRIGHTNESS,
+        "name": "Screen Brightness",
+        "unit": "%",
+        "unique_id": "screen_brightness",
     }
 }
 
 async def async_setup_entry(
     hass: HomeAssistant,
     config_entry: ConfigEntry,
-    async_add_entities: AddEntitiesCallback
+    async_add_entities,
 ) -> None:
     # Get the scan interval for this?
-    update_interval = timedelta(seconds=10)
+    update_interval = timedelta(seconds=5)
     # entity_id = config_entry.data[CONFIG_ENTRY_ID]
     # TODO: Change CONFIG_ENTRY_ID
     device: RaspberryPiDevice = hass.data[DOMAIN][CONFIG_ENTRY_ID]
@@ -49,25 +54,33 @@ async def async_setup_entry(
     await coordinator.async_refresh()
 
     sensors = [
-        BrightnessSensor(coordinator, device),
-        PowerSensor(coordinator, device)
+        PiSensor(coordinator, device, SENSOR_TYPES[BRIGHTNESS]),
+        PiSensor(coordinator, device, SENSOR_TYPES[POWER]),
     ]
 
     async_add_entities(sensors, True)
 
-# TODO: Standardize these
-class BrightnessSensor(CoordinatorEntity, SensorEntity):
-    def __init__(self, coordinator: DataUpdateCoordinator, device: RaspberryPiDevice):
+class PiSensor(CoordinatorEntity, Entity):
+    """ Standardizes the sensors """
+    def __init__(self,
+        coordinator: DataUpdateCoordinator,
+        device: RaspberryPiDevice,
+        sensor_type: Mapping[str, Any]
+    ):
         """ Initialize the brightness sensor """
         super().__init__(coordinator)
         self._device = device
         # Idk how we should do this
-        self.brightness = 0
+        self.sensor_type = sensor_type
 
     @property
     def available(self) -> bool:
         """Return if entity is available"""
-        return True
+        device_value_key = self.sensor_type["device_value_key"]
+        return (
+            self.coordinator.last_update_success
+            and device_value_key in self.coordinator.data
+        )
 
     @property
     def icon(self) -> str:
@@ -75,89 +88,34 @@ class BrightnessSensor(CoordinatorEntity, SensorEntity):
         return "mdi:server-network"
 
     @property
-    def available(self) -> bool:
-        """ Icon to use on the frontend, if any """
-        return True
-
-    @property
     def name(self) -> str:
         """ Return the name of the sensor """
-        return "brightness"
+        return self.sensor_type["name"]
 
     @property
     def unique_id(self) -> str:
         """ Return an unique ID """
-        return "brightness"
+        return self.sensor_type["unique_id"]
 
     @property
     def unit_of_measurement(self) -> str:
         """Return the unit of measurement of this entity, if any """
-        return "something"
+        return self.sensor_type["unit"]
 
     @property
-    def device_info(self) -> DeviceInfo:
+    def device_info(self) -> Mapping[str, Any]:
         """ Get Device Info """
         return {
-            "connections": "something",
+            "connections": {
+                (device_registry.CONNECTION_UPNP, self._device._serial_number)
+            },
             "name": self._device.name,
             "manufacturer": self._device.manufacturer,
             "model": self._device.model_name,
         }
 
     @property
-    def state(self) -> str | None:
+    def state(self) -> str:
         """ Return the state of the device """
-        return str(self.brightness)
-
-class PowerSensor(CoordinatorEntity, SensorEntity):
-    def __init__(self, coordinator: DataUpdateCoordinator, device: RaspberryPiDevice):
-        """ Initialize the brightness sensor """
-        super().__init__(coordinator)
-        self._device = device
-        # Idk how we should do this
-        self.power = False
-
-    @property
-    def available(self) -> bool:
-        """Return if entity is available"""
-        return True
-
-    @property
-    def icon(self) -> str:
-        """ Icon to use on the frontend, if any """
-        return "mdi:server-network"
-
-    @property
-    def available(self) -> bool:
-        """ Icon to use on the frontend, if any """
-        return True
-
-    @property
-    def name(self) -> str:
-        """ Return the name of the sensor """
-        return "screen power"
-
-    @property
-    def unique_id(self) -> str:
-        """ Return an unique ID """
-        return "screen_power"
-
-    @property
-    def unit_of_measurement(self) -> str:
-        """Return the unit of measurement of this entity, if any """
-        return "binary"
-
-    @property
-    def device_info(self) -> DeviceInfo:
-        """ Get Device Info """
-        return {
-            "connections": "something",
-            "name": "name",
-            "manufacturer": None,
-            "model": None
-        }
-
-    @property
-    def state(self) -> str | None:
-        """ Return the state of the device """
-        return "off"
+        device_value_key = self.sensor_type["device_value_key"]
+        return self.coordinator.data[device_value_key]

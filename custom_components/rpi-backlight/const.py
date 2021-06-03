@@ -6,6 +6,8 @@ ATTR_CONFIG = "config"
 VERSION = "0.1.0"
 POWER = "power"
 BRIGHTNESS = "brightness"
+MODEL = "model"
+SERIAL_NUMBER = "serial"
 
 CONFIG_ENTRY_ID = "entity_id"
 
