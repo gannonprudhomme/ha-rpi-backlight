@@ -11,7 +11,7 @@ You can add the integration through Home Assistant's UI.
 Additional, you can add the following to your `configuration.yaml`:
 
 ```yaml
-desktop_processes:
+rpi_backlight:
   scanning_interval: 5 # in seconds, defaults to 30
 ```
 
