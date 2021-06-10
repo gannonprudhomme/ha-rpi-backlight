@@ -24,7 +24,7 @@ Touchscreen. Built to communicate with the [RaspberryPi Backlight Server](https:
 2. Add it to Home Assistant as you would any other integration, and enter the desktop's URL
 during the config flow.
 
-3. You can optionally add an ignore list and prioritize the sorting of certain processes in the
+3. You can can optionally change the scanning interval in the
 below Configuration step.
 
 ## Configuration
